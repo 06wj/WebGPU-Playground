@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGPU Playground</title>
+</head>
+<body>
+    <div id='not-supported'>
+        Your browser does not support WebGPU, please visit <a href='https://webgpu.io' target="_blank">webgpu.io</a> for more information.
+    </div>
+    <canvas id='canvas'></canvas>
+    <script>
+        if (!navigator.gpu) {
+            alert('Your browser does not support WebGPU!');
+            document.body.querySelector('#not-supported').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

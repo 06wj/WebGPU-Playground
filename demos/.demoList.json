@@ -1,0 +1,38 @@
+[{
+    "group": "Samples",
+    "src": "Samples",
+    "demos": [{
+        "label": "Hello Canvas",
+        "src": "HelloCanvas"
+    }, {
+        "label": "HelloPoint1",
+        "src": "HelloPoint1"
+    }, {
+        "label": "HelloPoint2",
+        "src": "HelloPoint2"
+    }, {
+        "label": "ClickedPoints",
+        "src": "ClickedPoints"
+    }, {
+        "label": "ColoredPoints",
+        "src": "ColoredPoints"
+    }, {
+        "label": "HelloTriangle",
+        "src": "HelloTriangle"
+    }, {
+        "label": "RotatingTriangle",
+        "src": "RotatingTriangle"
+    }, {
+        "label": "MultiAttributeColor",
+        "src": "MultiAttributeColor"
+    }, {
+        "label": "TexturedQuad",
+        "src": "TexturedQuad"
+    }, {
+        "label": "MultiTexture",
+        "src": "MultiTexture"
+    }, {
+        "label": "TransformTexturedQuad",
+        "src": "TransformTexturedQuad"
+    }]
+}]

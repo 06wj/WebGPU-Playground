@@ -1,0 +1,31 @@
+{
+  "name": "webgpu-playground",
+  "version": "0.0.1",
+  "description": "WebGPU Playground",
+  "scripts": {
+    "demo:dev": "demosify --serve",
+    "demo:prod": "demosify --prod"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/06wj/WebGPU-Playground.git"
+  },
+  "keywords": [
+    "WebGPU",
+    "Playground"
+  ],
+  "author": "06wj",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/06wj/WebGPU-Playground/issues"
+  },
+  "homepage": "https://github.com/06wj/WebGPU-Playground#readme",
+  "devDependencies": {
+    "@demosify/core": "^0.6.0"
+  },
+  "dependencies": {
+    "@babel/standalone": "^7.9.6",
+    "@webgpu/glslang": "^0.0.15",
+    "hilo3d": "^1.13.47"
+  }
+}
