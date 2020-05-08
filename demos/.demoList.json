@@ -35,4 +35,14 @@
         "label": "TransformTexturedQuad",
         "src": "TransformTexturedQuad"
     }]
+},{
+    "group": "Hilo3d demo",
+    "src": "Hilo3d",
+    "demos": [{
+        "label": "Box",
+        "src": "Box"
+    },{
+        "label": "Light Box",
+        "src": "LightBox"
+    }]
 }]
