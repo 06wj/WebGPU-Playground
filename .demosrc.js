@@ -3,7 +3,7 @@ module.exports = {
         port: 2333, //配置开发服务器的端口号，默认值3000
     },
     output: {
-        dir: 'doc', // 配置构建部署时输出的目录，默认dist目录
+        dir: 'docs', // 配置构建部署时输出的目录，默认dist目录
         publicUrl: '.', // 配置构建输出的资源根目录，默认是'/'
         html: {
           title: 'WebGPU Playground'
