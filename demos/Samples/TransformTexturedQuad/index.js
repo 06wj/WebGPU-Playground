@@ -69,7 +69,7 @@ const sampler = device.createSampler({
     minFilter: "linear",
 });
 
-const uniformBufferSize = 4 * 16;
+const uniformBufferSize = 4 * 12;
 const uniformBuffer = device.createBuffer({
     size: uniformBufferSize,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
@@ -163,7 +163,7 @@ const renderPassDescriptor = {
 };  
 
 const modelMatrix = new Hilo3d.Matrix3();
-const modelMatrixData = new Float32Array(16);
+const modelMatrixData = new Float32Array(12);
 function getModelMatrix(){
     modelMatrix.rotate(-3/180*Math.PI);
     const elements = modelMatrix.elements;

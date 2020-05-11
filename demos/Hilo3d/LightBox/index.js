@@ -31,10 +31,10 @@ stage.addChild(colorBox);
 
 const vs = `#version 450
     layout(set=0, binding=0) uniform VertexUniforms{
+        mat3 u_normalMatrix;
         mat4 u_modelViewProjectionMatrix;
         mat4 u_modelViewMatrix;
-        mat3 u_normalMatrix;
-    };
+    } uniforms;
     
     layout(location=0) in vec3 a_position;
     layout(location=1) in vec3 a_normal;
@@ -45,10 +45,10 @@ const vs = `#version 450
     void main(){
         vec4 pos = vec4(a_position, 1.0);
         vec3 normal = a_normal;
-        v_normal = normalize(u_normalMatrix * normal);
-        vec3 fragPos = (u_modelViewMatrix * pos).xyz;
+        v_normal = normalize(uniforms.u_normalMatrix * normal);
+        vec3 fragPos = (uniforms.u_modelViewMatrix * pos).xyz;
         v_fragPos = fragPos;
-        gl_Position = u_modelViewProjectionMatrix * pos;
+        gl_Position = uniforms.u_modelViewProjectionMatrix * pos;
     }
 `;
 
@@ -99,7 +99,7 @@ const normalsBuffer = device.createBuffer({
 normalsBuffer.setSubData(0, normalsData);
 
 
-const uniformComponentCount = 16 * 3;
+const uniformComponentCount = 16 * 2 + 12;
 const uniformBufferSize = uniformComponentCount * 4;
 const uniformBuffer = device.createBuffer({
     size: uniformBufferSize,
@@ -181,12 +181,13 @@ const renderPassDescriptor = {
 
 const vertexUniformData = new Float32Array(uniformComponentCount);
 function getModelMatrix(){
-    vertexUniformData.set(Hilo3d.semantic.MODELVIEWPROJECTION.get(colorBox), 0);
-    vertexUniformData.set(Hilo3d.semantic.MODELVIEW.get(colorBox), 16);
-    const offset = 32;
+    const offset = 0;
     vertexUniformData.set(Hilo3d.semantic.MODELVIEWINVERSETRANSPOSE.get(colorBox), offset);
     vertexUniformData.copyWithin(offset + 4, offset + 3, offset + 6);
     vertexUniformData.copyWithin(offset + 8, offset + 6, offset + 9);
+    
+    vertexUniformData.set(Hilo3d.semantic.MODELVIEWPROJECTION.get(colorBox), 12);
+    vertexUniformData.set(Hilo3d.semantic.MODELVIEW.get(colorBox), 28);
     return vertexUniformData;
 }
 

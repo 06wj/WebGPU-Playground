@@ -33,7 +33,7 @@ const swapChain = context.configureSwapChain({
     format: swapChainFormat,
 });
 
-const uniformBufferSize = 4 * 16;
+const uniformBufferSize = 4 * 12;
 const uniformBuffer = device.createBuffer({
     size: uniformBufferSize,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
@@ -103,7 +103,7 @@ const pipeline = device.createRenderPipeline({
 });
 
 const modelMatrix = new Hilo3d.Matrix3();
-const modelMatrixData = new Float32Array(16);
+const modelMatrixData = new Float32Array(12);
 function getModelMatrix(){
     modelMatrix.rotate(-30/180*Math.PI);
     const elements = modelMatrix.elements;
