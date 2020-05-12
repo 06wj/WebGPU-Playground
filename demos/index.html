@@ -11,9 +11,16 @@
     </div>
     <canvas id='canvas'></canvas>
     <script>
-        if (!navigator.gpu) {
+        window.showNotSupport = () => {
             alert('Your browser does not support WebGPU!');
             document.body.querySelector('#not-supported').style.display = 'block';
+        };
+        if (!navigator.gpu) {
+            showNotSupport();
+        } else {
+            navigator.gpu.requestAdapter().catch(() => {
+                showNotSupport();
+            });
         }
     </script>
 </body>

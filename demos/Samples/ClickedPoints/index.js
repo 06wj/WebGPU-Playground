@@ -52,7 +52,7 @@ function render() {
         size: pointsData.byteLength,
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
     });
-    verticesBuffer.setSubData(0, pointsData);
+    helpers.setSubData(verticesBuffer, 0, pointsData, device);
 
     const pipeline = device.createRenderPipeline({
         vertexStage: {

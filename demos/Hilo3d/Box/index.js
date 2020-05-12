@@ -65,14 +65,14 @@ const verticesBuffer = device.createBuffer({
     size: verticesData.byteLength,
     usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
 });
-verticesBuffer.setSubData(0, verticesData);
+helpers.setSubData(verticesBuffer, 0, verticesData, device);
 
 const indicesData = boxGeometry.indices.data;
 const indicesBuffer = device.createBuffer({
     size: indicesData.byteLength,
     usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST
 });
-indicesBuffer.setSubData(0, indicesData);
+helpers.setSubData(indicesBuffer, 0, indicesData, device);
 
 const uniformComponentCount = 16;
 const uniformBufferSize = uniformComponentCount * 4;
@@ -155,7 +155,7 @@ function getModelMatrix(){
 
 function render() {
     renderPassDescriptor.colorAttachments[0].attachment = swapChain.getCurrentTexture().createView();
-    uniformBuffer.setSubData(0, getModelMatrix());
+    helpers.setSubData(uniformBuffer, 0, getModelMatrix(), device);
 
     const commandEncoder = device.createCommandEncoder({});
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
@@ -163,7 +163,7 @@ function render() {
     passEncoder.setBindGroup(0, uniformBindGroup);
     passEncoder.setVertexBuffer(0, verticesBuffer);
     passEncoder.setIndexBuffer(indicesBuffer);
-    passEncoder.drawIndexed(boxGeometry.indices.count, 1, 0, 0);
+    passEncoder.drawIndexed(boxGeometry.indices.count, 1, 0, 0, 0);
     passEncoder.endPass();
 
     device.defaultQueue.submit([commandEncoder.finish()]);

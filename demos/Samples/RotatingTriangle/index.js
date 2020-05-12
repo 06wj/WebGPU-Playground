@@ -70,7 +70,7 @@ const verticesBuffer = device.createBuffer({
     size: verticesData.byteLength,
     usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
 });
-verticesBuffer.setSubData(0, verticesData);
+helpers.setSubData(verticesBuffer, 0, verticesData, device);
 
 const pipeline = device.createRenderPipeline({
     layout: pipelineLayout,
@@ -127,8 +127,7 @@ function render() {
             },
         }],
     };    
-
-    uniformBuffer.setSubData(0, getModelMatrix());
+    helpers.setSubData(uniformBuffer, 0, getModelMatrix(), device);
 
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
     passEncoder.setPipeline(pipeline);

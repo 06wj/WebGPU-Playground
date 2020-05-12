@@ -56,7 +56,7 @@ const verticesBuffer = device.createBuffer({
     size: verticesData.byteLength,
     usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
 });
-verticesBuffer.setSubData(0, verticesData);
+helpers.setSubData(verticesBuffer, 0, verticesData, device);
 
 const texture = await helpers.createTextureFromImage(device, './images/hilo.png', GPUTextureUsage.SAMPLED);
 const sampler = device.createSampler({

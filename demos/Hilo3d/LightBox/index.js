@@ -12,6 +12,7 @@ const camera = new Hilo3d.PerspectiveCamera({
     near: 0.1,
     z: 3
 });
+stage.addChild(camera);
 
 const boxGeometry = new Hilo3d.BoxGeometry();
 boxGeometry.setAllRectUV([[0, 1], [1, 1], [1, 0], [0, 0]]);
@@ -20,14 +21,34 @@ const colorBox = new Hilo3d.Mesh({
     material: new Hilo3d.BasicMaterial({
         diffuse: new Hilo3d.Color(0.8, 0, 0)
     }),
+    x:0.5,
+    scaleX:0.5,
+    scaleY:0.5,
+    scaleZ:0.5,
     onUpdate: function() {
         this.rotationX += .5;
         this.rotationY += .5;
     }
 });
 
-stage.addChild(camera);
 stage.addChild(colorBox);
+
+const colorBox1 = new Hilo3d.Mesh({
+    geometry: boxGeometry,
+    material: new Hilo3d.BasicMaterial({
+        diffuse: new Hilo3d.Color(0.8, 0, 0)
+    }),
+    x:-0.5,
+    scaleX:0.2,
+    scaleY:0.5,
+    scaleZ:0.5,
+    onUpdate: function() {
+        this.rotationX -= 2;
+        this.rotationY -= 2;
+    }
+});
+
+stage.addChild(colorBox1);
 
 const vs = `#version 450
     layout(set=0, binding=0) uniform VertexUniforms{
@@ -82,27 +103,28 @@ const verticesBuffer = device.createBuffer({
     size: verticesData.byteLength,
     usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
 });
-verticesBuffer.setSubData(0, verticesData);
+helpers.setSubData(verticesBuffer, 0, verticesData, device);
 
 const indicesData = boxGeometry.indices.data;
 const indicesBuffer = device.createBuffer({
     size: indicesData.byteLength,
     usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST
 });
-indicesBuffer.setSubData(0, indicesData);
+helpers.setSubData(indicesBuffer, 0, indicesData, device);
 
 const normalsData = boxGeometry.normals.data;
 const normalsBuffer = device.createBuffer({
     size: normalsData.byteLength,
     usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
 });
-normalsBuffer.setSubData(0, normalsData);
-
+helpers.setSubData(normalsBuffer, 0, normalsData, device);
 
 const uniformComponentCount = 16 * 2 + 12;
 const uniformBufferSize = uniformComponentCount * 4;
+const alignedUniformSize = Math.ceil(uniformBufferSize / 256) * 256;
+
 const uniformBuffer = device.createBuffer({
-    size: uniformBufferSize,
+    size: alignedUniformSize * 2 + 4,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 });
 
@@ -110,7 +132,8 @@ const bindGroupLayout = device.createBindGroupLayout({
     entries: [{
         binding: 0,
         visibility: GPUShaderStage.VERTEX,
-        type: "uniform-buffer"
+        type: "uniform-buffer",
+        hasDynamicOffset: true
     }]
 });
 
@@ -119,7 +142,9 @@ const uniformBindGroup = device.createBindGroup({
     entries: [{
         binding: 0,
         resource: {
-            buffer: uniformBuffer
+            buffer: uniformBuffer,
+            offset: 0,
+            size: uniformBufferSize
         }
     }],
 });
@@ -171,52 +196,77 @@ const renderPassDescriptor = {
     colorAttachments: [{
         attachment: null,
         loadValue: {
-            r: 0,
-            g: 0,
-            b: 0,
+            r: .9,
+            g: .6,
+            b: .3,
             a: 1
         },
     }],
 };  
 
-const vertexUniformData = new Float32Array(uniformComponentCount);
-function getModelMatrix(){
+function getUniformData(mesh){
+    const unifromData = mesh._uniformData = mesh._uniformData || new Float32Array(uniformComponentCount);
     const offset = 0;
-    vertexUniformData.set(Hilo3d.semantic.MODELVIEWINVERSETRANSPOSE.get(colorBox), offset);
-    vertexUniformData.copyWithin(offset + 4, offset + 3, offset + 6);
-    vertexUniformData.copyWithin(offset + 8, offset + 6, offset + 9);
+    unifromData.set(Hilo3d.semantic.MODELVIEWINVERSETRANSPOSE.get(mesh), offset);
+    unifromData.copyWithin(offset + 4, offset + 3, offset + 6);
+    unifromData.copyWithin(offset + 8, offset + 6, offset + 9);
     
-    vertexUniformData.set(Hilo3d.semantic.MODELVIEWPROJECTION.get(colorBox), 12);
-    vertexUniformData.set(Hilo3d.semantic.MODELVIEW.get(colorBox), 28);
-    return vertexUniformData;
+    unifromData.set(Hilo3d.semantic.MODELVIEWPROJECTION.get(mesh), 12);
+    unifromData.set(Hilo3d.semantic.MODELVIEW.get(mesh), 28);
+
+    return unifromData;
 }
 
-function render() {
-    renderPassDescriptor.colorAttachments[0].attachment = swapChain.getCurrentTexture().createView();
-    uniformBuffer.setSubData(0, getModelMatrix());
+const renderList = new Hilo3d.RenderList();
+function render(dt) {
+    Hilo3d.semantic.init({}, {}, camera);
+    stage.traverseUpdate(dt);
+    stage.updateMatrixWorld();
+    camera.updateViewProjectionMatrix();
+    renderList.reset();
+    
+    stage.traverse((node) => {
+        if (!node.visible) {
+            return Node.TRAVERSE_STOP_CHILDREN;
+        }
+
+        if (node.isMesh) {
+            renderList.addMesh(node, camera);
+        }
+
+        return Node.TRAVERSE_STOP_NONE;
+    });
 
     const commandEncoder = device.createCommandEncoder({});
+    renderPassDescriptor.colorAttachments[0].attachment = swapChain.getCurrentTexture().createView();
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
+
+    renderList.sort();
+    let uniformOffset = 0;
+    renderList.traverse((mesh => {
+        renderMesh(mesh, uniformOffset, passEncoder);
+        uniformOffset += alignedUniformSize;
+    }));
+
+    passEncoder.endPass();
+    device.defaultQueue.submit([commandEncoder.finish()]);
+}
+
+function renderMesh(mesh, uniformOffset, passEncoder) {
+    helpers.setSubData(uniformBuffer, uniformOffset, getUniformData(mesh), device);
+
     passEncoder.setPipeline(pipeline);
-    passEncoder.setBindGroup(0, uniformBindGroup);
+    passEncoder.setBindGroup(0, uniformBindGroup, [uniformOffset]);
     passEncoder.setVertexBuffer(0, verticesBuffer);
     passEncoder.setVertexBuffer(1, normalsBuffer);
     passEncoder.setIndexBuffer(indicesBuffer);
-    passEncoder.drawIndexed(boxGeometry.indices.count, 1, 0, 0);
-    passEncoder.endPass();
-
-    device.defaultQueue.submit([commandEncoder.finish()]);
+    passEncoder.drawIndexed(boxGeometry.indices.count, 1, 0, 0, 0);
 }
 
 const ticker = new Hilo3d.Ticker(60);
 ticker.start();
 ticker.addTick({
     tick(dt){
-        Hilo3d.semantic.init({}, {}, camera);
-        stage.traverseUpdate(dt);
-        stage.updateMatrixWorld();
-        camera.updateViewProjectionMatrix();
-
-        render();
+        render(dt);
     }
 });
