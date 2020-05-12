@@ -77,25 +77,20 @@ helpers.createTextureFromImage = async function createTextureFromImage(device, s
     return texture;
 }
 
-helpers.updateBufferData = function updateBufferData(
-    device,
-    dst, dstOffse,
-    src,
-    commandEncoder) {
-    const [uploadBuffer, mapping] = device.createBufferMapped({
-        size: src.byteLength,
-        usage: GPUBufferUsage.COPY_SRC,
+helpers.setSubData = function setSubData(destBuffer, destOffset, srcArrayBuffer, device) {
+    const byteCount = srcArrayBuffer.byteLength;
+    const [srcBuffer, arrayBuffer] = device.createBufferMapped({
+        size: byteCount,
+        usage: GPUBufferUsage.COPY_SRC
     });
+    new srcArrayBuffer.constructor(arrayBuffer).set(srcArrayBuffer);
+    srcBuffer.unmap();
 
-    // @ts-ignore
-    new src.constructor(mapping).set(src);
-    uploadBuffer.unmap();
+    const encoder = device.createCommandEncoder();
+    encoder.copyBufferToBuffer(srcBuffer, 0, destBuffer, destOffset, byteCount);
+    const commandBuffer = encoder.finish();
+    const queue = device.defaultQueue;
+    queue.submit([commandBuffer]);
 
-    commandEncoder = commandEncoder || device.createCommandEncoder();
-    commandEncoder.copyBufferToBuffer(uploadBuffer, 0, dst, dstOffset, src.byteLength);
-
-    return {
-        commandEncoder,
-        uploadBuffer
-    };
+    srcBuffer.destroy();
 }
