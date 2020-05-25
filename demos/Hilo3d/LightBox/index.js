@@ -19,7 +19,7 @@ boxGeometry.setAllRectUV([[0, 1], [1, 1], [1, 0], [0, 0]]);
 const colorBox = new Hilo3d.Mesh({
     geometry: boxGeometry,
     material: new Hilo3d.BasicMaterial({
-        diffuse: new Hilo3d.Color(0.8, 0, 0)
+        diffuse: new Hilo3d.Color(0.6, 0.4, 0.9)
     }),
     x:0.5,
     scaleX:0.5,
@@ -36,7 +36,7 @@ stage.addChild(colorBox);
 const colorBox1 = new Hilo3d.Mesh({
     geometry: boxGeometry,
     material: new Hilo3d.BasicMaterial({
-        diffuse: new Hilo3d.Color(0.8, 0, 0)
+        diffuse: new Hilo3d.Color(0.3, 0.9, 0.6)
     }),
     x:-0.5,
     scaleX:0.2,
@@ -51,12 +51,13 @@ const colorBox1 = new Hilo3d.Mesh({
 stage.addChild(colorBox1);
 
 const vs = `#version 450
-    layout(set=0, binding=0) uniform VertexUniforms{
+    layout(set=0, binding=0) uniform Uniforms{
         mat3 u_normalMatrix;
         mat4 u_modelViewProjectionMatrix;
         mat4 u_modelViewMatrix;
+        vec3 diffuse;
     } uniforms;
-    
+
     layout(location=0) in vec3 a_position;
     layout(location=1) in vec3 a_normal;
 
@@ -75,6 +76,13 @@ const vs = `#version 450
 
 const fs = `#version 450
     precision highp float;
+    layout(set=0, binding=0) uniform Uniforms{
+        mat3 u_normalMatrix;
+        mat4 u_modelViewProjectionMatrix;
+        mat4 u_modelViewMatrix;
+        vec3 diffuse;
+    } uniforms;
+
     layout(location=0) in vec3 v_fragPos;
     layout(location=1) in vec3 v_normal;
 
@@ -83,7 +91,7 @@ const fs = `#version 450
     void main(){
         float light = max(dot(v_normal, vec3(0, 1, 1)), 0.0);
         vec3 normal = normalize(v_normal);
-        vec3 diffuse = vec3(1, 1, 0);
+        vec3 diffuse = uniforms.diffuse;
         vec3 color = diffuse * light;
         fragColor = vec4(color, 1);
     }
@@ -119,19 +127,19 @@ const normalsBuffer = device.createBuffer({
 });
 helpers.setSubData(normalsBuffer, 0, normalsData, device);
 
-const uniformComponentCount = 16 * 2 + 12;
+const uniformComponentCount = 16 * 2 + 12 + 4;
 const uniformBufferSize = uniformComponentCount * 4;
 const alignedUniformSize = Math.ceil(uniformBufferSize / 256) * 256;
 
 const uniformBuffer = device.createBuffer({
-    size: alignedUniformSize * 2 + 4,
+    size: alignedUniformSize * 2,
     usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 });
 
 const bindGroupLayout = device.createBindGroupLayout({
     entries: [{
         binding: 0,
-        visibility: GPUShaderStage.VERTEX,
+        visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
         type: "uniform-buffer",
         hasDynamicOffset: true
     }]
@@ -206,14 +214,21 @@ const renderPassDescriptor = {
 
 function getUniformData(mesh){
     const unifromData = mesh._uniformData = mesh._uniformData || new Float32Array(uniformComponentCount);
-    const offset = 0;
+    let offset = 0;
+    
     unifromData.set(Hilo3d.semantic.MODELVIEWINVERSETRANSPOSE.get(mesh), offset);
     unifromData.copyWithin(offset + 4, offset + 3, offset + 6);
     unifromData.copyWithin(offset + 8, offset + 6, offset + 9);
+    offset += 12;
     
-    unifromData.set(Hilo3d.semantic.MODELVIEWPROJECTION.get(mesh), 12);
-    unifromData.set(Hilo3d.semantic.MODELVIEW.get(mesh), 28);
+    unifromData.set(Hilo3d.semantic.MODELVIEWPROJECTION.get(mesh), offset);
+    offset += 16;
 
+    unifromData.set(Hilo3d.semantic.MODELVIEW.get(mesh), offset);
+    offset += 16;
+
+    unifromData.set(mesh.material.diffuse.elements, offset);
+    offset += 4;
     return unifromData;
 }
 
