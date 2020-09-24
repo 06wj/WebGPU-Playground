@@ -52,45 +52,15 @@ helpers.createTextureFromImage = async function createTextureFromImage(device, s
         usage: GPUTextureUsage.COPY_DST | usage,
     });
 
-    const [textureDataBuffer, mapping] = device.createBufferMapped({
-        size: data.byteLength,
-        usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
-    });
-    new Uint8Array(mapping).set(data);
-    textureDataBuffer.unmap();
-
-    const commandEncoder = device.createCommandEncoder({});
-    commandEncoder.copyBufferToTexture({
-        buffer: textureDataBuffer,
-        bytesPerRow,
-    }, {
-        texture: texture,
+    device.defaultQueue.writeTexture({
+        texture
+    }, data, {
+        offset: 0,
+        bytesPerRow
     }, {
         width: img.width,
         height: img.height,
         depth: 1,
     });
-
-    device.defaultQueue.submit([commandEncoder.finish()]);
-    textureDataBuffer.destroy();
-
     return texture;
-}
-
-helpers.setSubData = function setSubData(destBuffer, destOffset, srcArrayBuffer, device) {
-    const byteCount = srcArrayBuffer.byteLength;
-    const [srcBuffer, arrayBuffer] = device.createBufferMapped({
-        size: byteCount,
-        usage: GPUBufferUsage.COPY_SRC
-    });
-    new srcArrayBuffer.constructor(arrayBuffer).set(srcArrayBuffer);
-    srcBuffer.unmap();
-
-    const encoder = device.createCommandEncoder();
-    encoder.copyBufferToBuffer(srcBuffer, 0, destBuffer, destOffset, byteCount);
-    const commandBuffer = encoder.finish();
-    const queue = device.defaultQueue;
-    queue.submit([commandBuffer]);
-
-    srcBuffer.destroy();
-}
+};
