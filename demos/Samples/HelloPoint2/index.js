@@ -90,7 +90,7 @@ function randomColor(){
 
 function render() {
     randomColor();
-    helpers.setSubData(uniformBuffer, 0, color, device);
+    device.defaultQueue.writeBuffer(uniformBuffer, 0, color);
 
     const commandEncoder = device.createCommandEncoder({});
     const textureView = swapChain.getCurrentTexture().createView();

@@ -63,22 +63,26 @@ const swapChain = context.configureSwapChain({
 const verticesData = boxGeometry.vertices.data;
 const verticesBuffer = device.createBuffer({
     size: verticesData.byteLength,
-    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+    mappedAtCreation: true
 });
-helpers.setSubData(verticesBuffer, 0, verticesData, device);
+new Float32Array(verticesBuffer.getMappedRange()).set(verticesData);
+verticesBuffer.unmap();
 
 const indicesData = boxGeometry.indices.data;
 const indicesBuffer = device.createBuffer({
     size: indicesData.byteLength,
-    usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST
+    usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
+    mappedAtCreation: true
 });
-helpers.setSubData(indicesBuffer, 0, indicesData, device);
+new Uint16Array(indicesBuffer.getMappedRange()).set(indicesData);
+indicesBuffer.unmap();
 
 const uniformComponentCount = 16;
 const uniformBufferSize = uniformComponentCount * 4;
 const uniformBuffer = device.createBuffer({
     size: uniformBufferSize,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
 });
 
 const bindGroupLayout = device.createBindGroupLayout({
@@ -130,8 +134,7 @@ const pipeline = device.createRenderPipeline({
                 offset: 0,
                 format: "float3"
             }]
-        }],
-        indexFormat: 'uint16'
+        }]
     }
 });
 
@@ -155,14 +158,14 @@ function getModelMatrix(){
 
 function render() {
     renderPassDescriptor.colorAttachments[0].attachment = swapChain.getCurrentTexture().createView();
-    helpers.setSubData(uniformBuffer, 0, getModelMatrix(), device);
+    device.defaultQueue.writeBuffer(uniformBuffer, 0, getModelMatrix());
 
     const commandEncoder = device.createCommandEncoder({});
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
     passEncoder.setPipeline(pipeline);
     passEncoder.setBindGroup(0, uniformBindGroup);
+    passEncoder.setIndexBuffer(indicesBuffer, 'uint16');
     passEncoder.setVertexBuffer(0, verticesBuffer);
-    passEncoder.setIndexBuffer(indicesBuffer);
     passEncoder.drawIndexed(boxGeometry.indices.count, 1, 0, 0, 0);
     passEncoder.endPass();
 

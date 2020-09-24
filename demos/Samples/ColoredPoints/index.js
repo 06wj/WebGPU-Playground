@@ -54,9 +54,11 @@ function render() {
     const pointsData = new Float32Array(pointsArray);
     const verticesBuffer = device.createBuffer({
         size: pointsData.byteLength,
-        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+        mappedAtCreation: true
     });
-    helpers.setSubData(verticesBuffer, 0, pointsData, device);
+    new Float32Array(verticesBuffer.getMappedRange()).set(pointsData);
+    verticesBuffer.unmap();
 
     const pipeline = device.createRenderPipeline({
         vertexStage: {

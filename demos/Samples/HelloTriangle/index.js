@@ -36,9 +36,11 @@ const verticesData = new Float32Array([
 ]);
 const verticesBuffer = device.createBuffer({
     size: verticesData.byteLength,
-    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+    mappedAtCreation: true
 });
-helpers.setSubData(verticesBuffer, 0, verticesData, device);
+new Float32Array(verticesBuffer.getMappedRange()).set(verticesData);
+verticesBuffer.unmap();
 
 const pipeline = device.createRenderPipeline({
     vertexStage: {

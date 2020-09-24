@@ -54,9 +54,11 @@ const verticesData = new Float32Array([
 ]);
 const verticesBuffer = device.createBuffer({
     size: verticesData.byteLength,
-    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+    mappedAtCreation: true
 });
-helpers.setSubData(verticesBuffer, 0, verticesData, device);
+new Float32Array(verticesBuffer.getMappedRange()).set(verticesData);
+verticesBuffer.unmap();
 
 const texture = await helpers.createTextureFromImage(device, './images/hilo.png', GPUTextureUsage.SAMPLED);
 const sampler = device.createSampler({
@@ -108,6 +110,7 @@ const pipeline = device.createRenderPipeline({
         format: swapChainFormat
     }],
     vertexState: {
+        indexFormat:'uint16',
         vertexBuffers:[{
             arrayStride: 7 * 4,
             attributes:[{

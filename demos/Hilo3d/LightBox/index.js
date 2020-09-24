@@ -109,23 +109,29 @@ const swapChain = context.configureSwapChain({
 const verticesData = boxGeometry.vertices.data;
 const verticesBuffer = device.createBuffer({
     size: verticesData.byteLength,
-    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+    mappedAtCreation: true
 });
-helpers.setSubData(verticesBuffer, 0, verticesData, device);
+new Float32Array(verticesBuffer.getMappedRange()).set(verticesData);
+verticesBuffer.unmap();
 
 const indicesData = boxGeometry.indices.data;
 const indicesBuffer = device.createBuffer({
     size: indicesData.byteLength,
-    usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST
+    usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
+    mappedAtCreation: true
 });
-helpers.setSubData(indicesBuffer, 0, indicesData, device);
+new Uint16Array(indicesBuffer.getMappedRange()).set(indicesData);
+indicesBuffer.unmap();
 
 const normalsData = boxGeometry.normals.data;
 const normalsBuffer = device.createBuffer({
     size: normalsData.byteLength,
-    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+    mappedAtCreation: true
 });
-helpers.setSubData(normalsBuffer, 0, normalsData, device);
+new Float32Array(normalsBuffer.getMappedRange()).set(normalsData);
+normalsBuffer.unmap();
 
 const uniformComponentCount = 16 * 2 + 12 + 4;
 const uniformBufferSize = uniformComponentCount * 4;
@@ -195,8 +201,7 @@ const pipeline = device.createRenderPipeline({
                 offset: 0,
                 format: "float3"
             }]
-        }],
-        indexFormat: 'uint16'
+        }]
     }
 });
 
@@ -268,13 +273,13 @@ function render(dt) {
 }
 
 function renderMesh(mesh, uniformOffset, passEncoder) {
-    helpers.setSubData(uniformBuffer, uniformOffset, getUniformData(mesh), device);
+    device.defaultQueue.writeBuffer(uniformBuffer, uniformOffset, getUniformData(mesh));
 
     passEncoder.setPipeline(pipeline);
     passEncoder.setBindGroup(0, uniformBindGroup, [uniformOffset]);
     passEncoder.setVertexBuffer(0, verticesBuffer);
     passEncoder.setVertexBuffer(1, normalsBuffer);
-    passEncoder.setIndexBuffer(indicesBuffer);
+    passEncoder.setIndexBuffer(indicesBuffer, 'uint16');
     passEncoder.drawIndexed(boxGeometry.indices.count, 1, 0, 0, 0);
 }
 

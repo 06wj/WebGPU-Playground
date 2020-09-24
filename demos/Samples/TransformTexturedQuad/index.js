@@ -55,9 +55,11 @@ const verticesData = new Float32Array([
 ]);
 const verticesBuffer = device.createBuffer({
     size: verticesData.byteLength,
-    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+    usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+    mappedAtCreation: true
 });
-helpers.setSubData(verticesBuffer, 0, verticesData, device);
+new Float32Array(verticesBuffer.getMappedRange()).set(verticesData);
+verticesBuffer.unmap();
 
 const [texture0, texture1] = await Promise.all([
     helpers.createTextureFromImage(device, './images/head.png', GPUTextureUsage.SAMPLED),
@@ -134,6 +136,7 @@ const pipeline = device.createRenderPipeline({
         format: swapChainFormat
     }],
     vertexState: {
+        indexFormat:'uint16',
         vertexBuffers:[{
             arrayStride: 7 * 4,
             attributes:[{
@@ -174,7 +177,7 @@ function getModelMatrix(){
 
 function render() {
     renderPassDescriptor.colorAttachments[0].attachment = swapChain.getCurrentTexture().createView();
-    helpers.setSubData(uniformBuffer, 0, getModelMatrix(), device);
+    device.defaultQueue.writeBuffer(uniformBuffer, 0, getModelMatrix());
 
     const commandEncoder = device.createCommandEncoder({});
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
