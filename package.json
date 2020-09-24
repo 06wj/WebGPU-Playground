@@ -4,7 +4,9 @@
   "description": "WebGPU Playground",
   "scripts": {
     "demo:dev": "demosify --serve",
-    "demo:prod": "demosify --prod"
+    "demo:prod": "demosify --prod",
+    "dev": "npm run demo:dev",
+    "pub": "npm run demo:prod"
   },
   "repository": {
     "type": "git",
