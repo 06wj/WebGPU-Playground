@@ -26,9 +26,9 @@ const fs = `#version 450
 
 const context = canvas.getContext('gpupresent');
 
-const swapChainFormat = "bgra8unorm";
+const swapChainFormat = 'bgra8unorm';
 
-const swapChain = context.configureSwapChain({
+const swapChain = context.configure({
     device,
     format: swapChainFormat,
 });
@@ -43,7 +43,7 @@ const uniformsBindGroupLayout = device.createBindGroupLayout({
     entries: [{
         binding: 0,
         visibility: GPUShaderStage.VERTEX,
-        type: "uniform-buffer"
+        buffer: {}
     }]
 });
 
@@ -76,32 +76,32 @@ verticesBuffer.unmap();
 
 const pipeline = device.createRenderPipeline({
     layout: pipelineLayout,
-    vertexStage: {
+    vertex: {
         module: device.createShaderModule({
-            code: glslang.compileGLSL(vs, "vertex")
+            code: glslang.compileGLSL(vs, 'vertex')
         }),
-        entryPoint: "main"
-    },
-    fragmentStage: {
-        module: device.createShaderModule({
-            code: glslang.compileGLSL(fs, "fragment")
-        }),
-        entryPoint: "main"
-    },
-    primitiveTopology: "triangle-list",
-    colorStates: [{
-        format: swapChainFormat
-    }],
-    vertexState: {
-        vertexBuffers:[{
+        entryPoint: 'main',
+        buffers: [{
             arrayStride: 2 * 4,
             attributes:[{
                 shaderLocation: 0,
                 offset: 0,
-                format: "float2"
+                format: 'float32x2'
             }]
         }]
-    }
+    },
+    fragment: {
+        module: device.createShaderModule({
+            code: glslang.compileGLSL(fs, 'fragment')
+        }),
+        entryPoint: 'main',
+        targets: [{
+            format: swapChainFormat
+        }]
+    },
+    primitive:{
+	topology: 'triangle-list'
+},
 });
 
 const modelMatrix = new Hilo3d.Matrix3();
@@ -117,10 +117,10 @@ function getModelMatrix(){
 
 function render() {
     const commandEncoder = device.createCommandEncoder({});
-    const textureView = swapChain.getCurrentTexture().createView();
+    const textureView = context.getCurrentTexture().createView();
     const renderPassDescriptor = {
         colorAttachments: [{
-            attachment: textureView,
+            view: textureView,
             loadValue: {
                 r: 0.3,
                 g: 0.6,
@@ -129,7 +129,7 @@ function render() {
             },
         }],
     };
-    device.defaultQueue.writeBuffer(uniformBuffer, 0, getModelMatrix());
+    device.queue.writeBuffer(uniformBuffer, 0, getModelMatrix());
 
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
     passEncoder.setPipeline(pipeline);
@@ -138,7 +138,7 @@ function render() {
     passEncoder.draw(3, 1, 0, 0);
     passEncoder.endPass();
 
-    device.defaultQueue.submit([commandEncoder.finish()]);
+    device.queue.submit([commandEncoder.finish()]);
 }
 
 const ticker = new Hilo3d.Ticker(60);

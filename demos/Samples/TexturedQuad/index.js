@@ -38,9 +38,9 @@ const fs = `#version 450
 
 const context = canvas.getContext('gpupresent');
 
-const swapChainFormat = "bgra8unorm";
+const swapChainFormat = 'bgra8unorm';
 
-const swapChain = context.configureSwapChain({
+const swapChain = context.configure({
     device,
     format: swapChainFormat,
 });
@@ -62,19 +62,19 @@ verticesBuffer.unmap();
 
 const texture = await helpers.createTextureFromImage(device, './images/hilo.png', GPUTextureUsage.SAMPLED);
 const sampler = device.createSampler({
-    magFilter: "linear",
-    minFilter: "linear",
+    magFilter: 'linear',
+    minFilter: 'linear',
 });
 
 const bindGroupLayout = device.createBindGroupLayout({
     entries: [{
         binding: 0,
         visibility: GPUShaderStage.FRAGMENT,
-        type: "sampler"
+        sampler: {}
     }, {
         binding: 1,
         visibility: GPUShaderStage.FRAGMENT,
-        type: "sampled-texture"
+        texture: {}
     }]
 });
 
@@ -93,46 +93,46 @@ const pipelineLayout = device.createPipelineLayout({ bindGroupLayouts: [bindGrou
 
 const pipeline = device.createRenderPipeline({
     layout: pipelineLayout,
-    vertexStage: {
+    vertex: {
         module: device.createShaderModule({
-            code: glslang.compileGLSL(vs, "vertex")
+            code: glslang.compileGLSL(vs, 'vertex')
         }),
-        entryPoint: "main"
-    },
-    fragmentStage: {
-        module: device.createShaderModule({
-            code: glslang.compileGLSL(fs, "fragment")
-        }),
-        entryPoint: "main"
-    },
-    primitiveTopology: "triangle-strip",
-    colorStates: [{
-        format: swapChainFormat
-    }],
-    vertexState: {
-        indexFormat:'uint16',
-        vertexBuffers:[{
+        entryPoint: 'main',
+        buffers: [{
             arrayStride: 7 * 4,
             attributes:[{
                 shaderLocation: 0,
                 offset: 0,
-                format: "float2"
+                format: 'float32x2'
             },{
                 shaderLocation: 1,
                 offset: 2 * 4,
-                format: "float3"
+                format: 'float32x3'
             },{
                 shaderLocation: 2,
                 offset: 5 * 4,
-                format: "float2"
+                format: 'float32x2'
             }]
         }]
-    }
+    },
+    fragment: {
+        module: device.createShaderModule({
+            code: glslang.compileGLSL(fs, 'fragment')
+        }),
+        entryPoint: 'main',
+        targets: [{
+            format: swapChainFormat
+        }]
+    },
+    primitive: {
+        topology: 'triangle-strip',
+        stripIndexFormat:'uint16',
+    },
 });
 
 const renderPassDescriptor = {
     colorAttachments: [{
-        attachment: null,
+        view: null,
         loadValue: {
             r: 0,
             g: 0,
@@ -143,7 +143,7 @@ const renderPassDescriptor = {
 };    
 
 function render() {
-    renderPassDescriptor.colorAttachments[0].attachment = swapChain.getCurrentTexture().createView();
+    renderPassDescriptor.colorAttachments[0].view = context.getCurrentTexture().createView();
     
     const commandEncoder = device.createCommandEncoder({});
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
@@ -153,7 +153,7 @@ function render() {
     passEncoder.draw(4, 1, 0, 0);
     passEncoder.endPass();
 
-    device.defaultQueue.submit([commandEncoder.finish()]);
+    device.queue.submit([commandEncoder.finish()]);
 }
 
 const ticker = new Hilo3d.Ticker(60);

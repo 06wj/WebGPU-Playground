@@ -53,9 +53,9 @@ const fs = `#version 450
 
 const context = canvas.getContext('gpupresent');
 
-const swapChainFormat = "bgra8unorm";
+const swapChainFormat = 'bgra8unorm';
 
-const swapChain = context.configureSwapChain({
+const swapChain = context.configure({
     device,
     format: swapChainFormat,
 });
@@ -89,7 +89,7 @@ const bindGroupLayout = device.createBindGroupLayout({
     entries: [{
         binding: 0,
         visibility: GPUShaderStage.VERTEX,
-        type: "uniform-buffer"
+        buffer: {}
     }]
 });
 
@@ -107,40 +107,38 @@ const pipelineLayout = device.createPipelineLayout({ bindGroupLayouts: [bindGrou
 
 const pipeline = device.createRenderPipeline({
     layout: pipelineLayout,
-    vertexStage: {
+    vertex: {
         module: device.createShaderModule({
-            code: glslang.compileGLSL(vs, "vertex")
+            code: glslang.compileGLSL(vs, 'vertex')
         }),
-        entryPoint: "main"
-    },
-    fragmentStage: {
-        module: device.createShaderModule({
-            code: glslang.compileGLSL(fs, "fragment")
-        }),
-        entryPoint: "main"
-    },
-    primitiveTopology: "triangle-list",
-    rasterizationState: {
-        cullMode: 'back',
-    },
-    colorStates: [{
-        format: swapChainFormat
-    }],
-    vertexState: {
-        vertexBuffers:[{
+        entryPoint: 'main',
+        buffers: [{
             arrayStride: 3 * 4,
             attributes:[{
                 shaderLocation: 0,
                 offset: 0,
-                format: "float3"
+                format: 'float32x3'
             }]
         }]
-    }
+    },
+    fragment: {
+        module: device.createShaderModule({
+            code: glslang.compileGLSL(fs, 'fragment')
+        }),
+        entryPoint: 'main',
+        targets: [{
+            format: swapChainFormat
+        }]
+    },
+    primitive:{
+    	topology: 'triangle-list',
+        cullMode: 'back',
+    },
 });
 
 const renderPassDescriptor = {
     colorAttachments: [{
-        attachment: null,
+        view: null,
         loadValue: {
             r: 0,
             g: 0,
@@ -157,8 +155,8 @@ function getModelMatrix(){
 }
 
 function render() {
-    renderPassDescriptor.colorAttachments[0].attachment = swapChain.getCurrentTexture().createView();
-    device.defaultQueue.writeBuffer(uniformBuffer, 0, getModelMatrix());
+    renderPassDescriptor.colorAttachments[0].view = context.getCurrentTexture().createView();
+    device.queue.writeBuffer(uniformBuffer, 0, getModelMatrix());
 
     const commandEncoder = device.createCommandEncoder({});
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
@@ -169,7 +167,7 @@ function render() {
     passEncoder.drawIndexed(boxGeometry.indices.count, 1, 0, 0, 0);
     passEncoder.endPass();
 
-    device.defaultQueue.submit([commandEncoder.finish()]);
+    device.queue.submit([commandEncoder.finish()]);
 }
 
 const ticker = new Hilo3d.Ticker(60);

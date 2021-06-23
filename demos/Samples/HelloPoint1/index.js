@@ -21,39 +21,41 @@ const fs = `#version 450
 
 const context = canvas.getContext('gpupresent');
 
-const swapChainFormat = "bgra8unorm";
+const swapChainFormat = 'bgra8unorm';
 
-const swapChain = context.configureSwapChain({
+const swapChain = context.configure({
     device,
     format: swapChainFormat,
 });
 
 const pipeline = device.createRenderPipeline({
-    vertexStage: {
+    vertex: {
         module: device.createShaderModule({
-            code: glslang.compileGLSL(vs, "vertex")
+            code: glslang.compileGLSL(vs, 'vertex')
         }),
-        entryPoint: "main"
+        entryPoint: 'main'
     },
-    fragmentStage: {
+    fragment: {
         module: device.createShaderModule({
-            code: glslang.compileGLSL(fs, "fragment")
+            code: glslang.compileGLSL(fs, 'fragment')
         }),
-        entryPoint: "main"
+        entryPoint: 'main',
+        targets: [{
+            format: swapChainFormat
+        }]
     },
-    primitiveTopology: "point-list",
-    colorStates: [{
-        format: swapChainFormat
-    }]
+    primitive: {
+        topology:'point-list'
+    }
 });
 
 function render() {
     const commandEncoder = device.createCommandEncoder({});
-    const textureView = swapChain.getCurrentTexture().createView();
+    const textureView = context.getCurrentTexture().createView();
 
     const renderPassDescriptor = {
         colorAttachments: [{
-            attachment: textureView,
+            view: textureView,
             loadValue: {
                 r: 0,
                 g: 0,
@@ -68,7 +70,7 @@ function render() {
     passEncoder.draw(1, 1, 0, 0);
     passEncoder.endPass();
 
-    device.defaultQueue.submit([commandEncoder.finish()]);
+    device.queue.submit([commandEncoder.finish()]);
 }
 
 const ticker = new Hilo3d.Ticker(60);

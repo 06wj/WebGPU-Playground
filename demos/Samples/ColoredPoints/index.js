@@ -26,9 +26,9 @@ const fs = `#version 450
 
 const context = canvas.getContext('gpupresent');
 
-const swapChainFormat = "bgra8unorm";
+const swapChainFormat = 'bgra8unorm';
 
-const swapChain = context.configureSwapChain({
+const swapChain = context.configure({
     device,
     format: swapChainFormat,
 });
@@ -37,11 +37,11 @@ const pointsArray = [0, 0, 0.5, 0.5, 0.6];
 
 function render() {
     const commandEncoder = device.createCommandEncoder({});
-    const textureView = swapChain.getCurrentTexture().createView();
+    const textureView = context.getCurrentTexture().createView();
 
     const renderPassDescriptor = {
         colorAttachments: [{
-            attachment: textureView,
+            view: textureView,
             loadValue: {
                 r: 0,
                 g: 0,
@@ -61,36 +61,36 @@ function render() {
     verticesBuffer.unmap();
 
     const pipeline = device.createRenderPipeline({
-        vertexStage: {
+        vertex: {
             module: device.createShaderModule({
-                code: glslang.compileGLSL(vs, "vertex")
+                code: glslang.compileGLSL(vs, 'vertex')
             }),
-            entryPoint: "main"
-        },
-        fragmentStage: {
-            module: device.createShaderModule({
-                code: glslang.compileGLSL(fs, "fragment")
-            }),
-            entryPoint: "main"
-        },
-        primitiveTopology: "point-list",
-        colorStates: [{
-            format: swapChainFormat
-        }],
-        vertexState: {
-            vertexBuffers:[{
+            entryPoint: 'main',
+            buffers:[{
                 arrayStride: 5 * 4,
                 attributes:[{
                     shaderLocation: 0,
                     offset: 0,
-                    format: "float2"
+                    format: 'float32x2'
                 },{
                     shaderLocation: 1,
                     offset: 2 * 4,
-                    format: "float3"
+                    format: 'float32x3'
                 }]
             }]
-        }
+        },
+        fragment: {
+            module: device.createShaderModule({
+                code: glslang.compileGLSL(fs, 'fragment')
+            }),
+            entryPoint: 'main',
+            targets:[{
+                format: swapChainFormat
+            }]
+        },
+        primitive:{
+        	topology: 'point-list'
+        },
     });
 
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
@@ -99,7 +99,7 @@ function render() {
     passEncoder.draw(pointsArray.length/5, 1, 0, 0);
     passEncoder.endPass();
 
-    device.defaultQueue.submit([commandEncoder.finish()]);
+    device.queue.submit([commandEncoder.finish()]);
 }
 
 render();

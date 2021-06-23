@@ -7,20 +7,20 @@ const glslang = await glslangModule();
 
 const context = canvas.getContext('gpupresent');
 
-const swapChainFormat = "bgra8unorm";
+const swapChainFormat = 'bgra8unorm';
 
-const swapChain = context.configureSwapChain({
+const swapChain = context.configure({
     device,
     format: swapChainFormat,
 });
 
 function render() {
     const commandEncoder = device.createCommandEncoder({});
-    const textureView = swapChain.getCurrentTexture().createView();
+    const textureView = context.getCurrentTexture().createView();
 
     const renderPassDescriptor = {
         colorAttachments: [{
-            attachment: textureView,
+            view: textureView,
             loadValue: {
                 r: Math.random(),
                 g: Math.random(),
@@ -33,7 +33,7 @@ function render() {
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
     passEncoder.endPass();
 
-    device.defaultQueue.submit([commandEncoder.finish()]);
+    device.queue.submit([commandEncoder.finish()]);
 }
 
 const ticker = new Hilo3d.Ticker(60);
