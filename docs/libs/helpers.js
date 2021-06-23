@@ -52,7 +52,7 @@ helpers.createTextureFromImage = async function createTextureFromImage(device, s
         usage: GPUTextureUsage.COPY_DST | usage,
     });
 
-    device.defaultQueue.writeTexture({
+    device.queue.writeTexture({
         texture
     }, data, {
         offset: 0,
