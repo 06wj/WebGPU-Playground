@@ -146,8 +146,9 @@ const bindGroupLayout = device.createBindGroupLayout({
     entries: [{
         binding: 0,
         visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-        buffer: {},
-        hasDynamicOffset: true
+        buffer: {
+            hasDynamicOffset: true
+        }
     }]
 });
 
