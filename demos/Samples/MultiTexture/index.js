@@ -5,35 +5,37 @@ const adapter = await navigator.gpu.requestAdapter();
 const device = await adapter.requestDevice();
 const glslang = await glslangModule();
 
-const vs = `#version 450
-    layout(location=0) in vec2 a_position;
-    layout(location=1) in vec2 a_uv;
+const vs = `
+    struct VertexOutput {
+      [[builtin(position)]] position : vec4<f32>;
+      [[location(0)]] v_uv : vec2<f32>;
+    };
 
-    layout(location=0) out vec2 v_uv;
-
-    void main(){
-        gl_Position = vec4(a_position, 0, 1);
-        v_uv = a_uv;
+    [[stage(vertex)]]
+    fn main([[location(0)]] a_position : vec2<f32>, 
+        [[location(1)]] a_uv : vec2<f32>) -> VertexOutput {
+      var output : VertexOutput;
+      output.position = vec4<f32>(a_position, 0.0, 1.0);
+      output.v_uv = a_uv;
+      return output;
     }
 `;
 
-const fs = `#version 450
-    precision highp float;
-    layout(set=0, binding=0) uniform sampler u_sampler;
-    layout(set=0, binding=1) uniform texture2D u_texture0;
-    layout(set=0, binding=2) uniform texture2D u_texture1;
-    layout(location=0) in vec2 v_uv;
+const fs = `
+    [[group(0), binding(0)]] var u_sampler: sampler;
+    [[group(0), binding(1)]] var u_texture0: texture_2d<f32>;
+    [[group(0), binding(2)]] var u_texture1: texture_2d<f32>;
 
-    layout(location=0) out vec4 fragColor;
-
-    void main(){
-        vec4 color0 = texture(sampler2D(u_texture0, u_sampler), v_uv);
-        vec4 color1 = texture(sampler2D(u_texture1, u_sampler), v_uv);
-        fragColor = color0 * color1;
+    [[stage(fragment)]]
+    fn main([[location(0)]] v_uv: vec2<f32>) -> [[location(0)]] vec4<f32> {
+      var color0 = textureSample(u_texture0, u_sampler, v_uv);
+      var color1 = textureSample(u_texture1, u_sampler, v_uv);
+      var fragColor = color0 * color1;
+      return fragColor;
     }
 `;
 
-const context = canvas.getContext('gpupresent');
+const context = canvas.getContext('webgpu');
 
 const swapChainFormat = 'bgra8unorm';
 
@@ -58,8 +60,8 @@ new Float32Array(verticesBuffer.getMappedRange()).set(verticesData);
 verticesBuffer.unmap();
 
 const [texture0, texture1] = await Promise.all([
-    helpers.createTextureFromImage(device, './images/head.png', GPUTextureUsage.SAMPLED),
-    helpers.createTextureFromImage(device, './images/circle.gif', GPUTextureUsage.SAMPLED),
+    helpers.createTextureFromImage(device, './images/head.png', GPUTextureUsage.TEXTURE_BINDING),
+    helpers.createTextureFromImage(device, './images/circle.gif', GPUTextureUsage.TEXTURE_BINDING),
 ]);
 const sampler = device.createSampler({
     magFilter: 'linear',
@@ -102,7 +104,7 @@ const pipeline = device.createRenderPipeline({
     layout: pipelineLayout,
     vertex: {
         module: device.createShaderModule({
-            code: glslang.compileGLSL(vs, 'vertex')
+            code: vs
         }),
         entryPoint: 'main',
         buffers:[{
@@ -120,7 +122,7 @@ const pipeline = device.createRenderPipeline({
     },
     fragment: {
         module: device.createShaderModule({
-            code: glslang.compileGLSL(fs, 'fragment')
+            code: fs
         }),
         entryPoint: 'main',
         targets:[{

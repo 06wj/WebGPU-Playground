@@ -50,54 +50,54 @@ const colorBox1 = new Hilo3d.Mesh({
 
 stage.addChild(colorBox1);
 
-const vs = `#version 450
-    layout(set=0, binding=0) uniform Uniforms{
-        mat3 u_normalMatrix;
-        mat4 u_modelViewProjectionMatrix;
-        mat4 u_modelViewMatrix;
-        vec3 diffuse;
-    } uniforms;
+const vs = `
+    [[block]] struct Uniforms {
+      u_normalMatrix : mat3x3<f32>;
+      u_modelViewProjectionMatrix : mat4x4<f32>;
+      u_modelViewMatrix : mat4x4<f32>;
+      diffuse: vec3<f32>;
+    };
+    [[binding(0), group(0)]] var<uniform> uniforms : Uniforms;
 
-    layout(location=0) in vec3 a_position;
-    layout(location=1) in vec3 a_normal;
+    struct VertexOutput {
+      [[builtin(position)]] position : vec4<f32>;
+      [[location(0)]] v_normal : vec3<f32>;
+    };
 
-    layout(location=0) out vec3 v_fragPos;
-    layout(location=1) out vec3 v_normal;
-
-    void main(){
-        vec4 pos = vec4(a_position, 1.0);
-        vec3 normal = a_normal;
-        v_normal = normalize(uniforms.u_normalMatrix * normal);
-        vec3 fragPos = (uniforms.u_modelViewMatrix * pos).xyz;
-        v_fragPos = fragPos;
-        gl_Position = uniforms.u_modelViewProjectionMatrix * pos;
+    [[stage(vertex)]]
+    fn main([[location(0)]] a_position : vec3<f32>,
+        [[location(1)]] a_normal : vec3<f32>) -> VertexOutput {
+        var output : VertexOutput;
+        var pos = vec4<f32>(a_position, 1.0);
+        var normal = a_normal;
+        output.position = uniforms.u_modelViewProjectionMatrix * pos;
+        output.v_normal = normalize(uniforms.u_normalMatrix * normal);
+        return output;
     }
 `;
 
-const fs = `#version 450
-    precision highp float;
-    layout(set=0, binding=0) uniform Uniforms{
-        mat3 u_normalMatrix;
-        mat4 u_modelViewProjectionMatrix;
-        mat4 u_modelViewMatrix;
-        vec3 diffuse;
-    } uniforms;
+const fs = `
+    [[block]] struct Uniforms {
+      u_normalMatrix : mat3x3<f32>;
+      u_modelViewProjectionMatrix : mat4x4<f32>;
+      u_modelViewMatrix : mat4x4<f32>;
+      diffuse: vec3<f32>;
+    };
+    [[binding(0), group(0)]] var<uniform> uniforms : Uniforms;
 
-    layout(location=0) in vec3 v_fragPos;
-    layout(location=1) in vec3 v_normal;
 
-    layout(location=0) out vec4 fragColor;
-
-    void main(){
-        float light = max(dot(v_normal, vec3(0, 1, 1)), 0.0);
-        vec3 normal = normalize(v_normal);
-        vec3 diffuse = uniforms.diffuse;
-        vec3 color = diffuse * light;
-        fragColor = vec4(color, 1);
+    [[stage(fragment)]]
+    fn main([[location(0)]] v_normal: vec3<f32>) -> [[location(0)]] vec4<f32> {
+        var light = max(dot(v_normal, vec3<f32>(0.0, 1.0, 1.0)), 0.0);
+        var normal = normalize(v_normal);
+        var diffuse = uniforms.diffuse;
+        var color = diffuse * light;
+        var fragColor = vec4<f32>(color, 1.0);
+        return fragColor;
     }
 `;
 
-const context = canvas.getContext('gpupresent');
+const context = canvas.getContext('webgpu');
 
 const swapChainFormat = 'bgra8unorm';
 
@@ -170,7 +170,7 @@ const pipeline = device.createRenderPipeline({
     layout: pipelineLayout,
     vertex: {
         module: device.createShaderModule({
-            code: glslang.compileGLSL(vs, 'vertex')
+            code: vs
         }),
         entryPoint: 'main',
         buffers: [{
@@ -191,7 +191,7 @@ const pipeline = device.createRenderPipeline({
     },
     fragment: {
         module: device.createShaderModule({
-            code: glslang.compileGLSL(fs, 'fragment')
+            code: fs
         }),
         entryPoint: 'main',
         targets: [{

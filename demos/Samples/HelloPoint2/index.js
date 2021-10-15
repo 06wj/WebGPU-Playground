@@ -5,25 +5,32 @@ const adapter = await navigator.gpu.requestAdapter();
 const device = await adapter.requestDevice();
 const glslang = await glslangModule();
 
-const vs = `#version 450
-    void main(){
-        gl_Position = vec4(-0.5, 0.5, 0.0, 1);
+const vs = `
+    struct VertexOutput {
+        [[builtin(position)]] position : vec4<f32>;
+    };
+
+    [[stage(vertex)]]
+    fn main() ->  VertexOutput {
+        var output : VertexOutput;
+        output.position = vec4<f32>(-0.5, 0.5, 0.0, 1.0);
+        return output;
     }
 `;
 
-const fs = `#version 450
-    precision highp float;
-    layout(location=0) out vec4 fragColor;
-    layout(std140, binding=0) uniform Uniforms{
-        vec4 color;
-    } uniforms;
+const fs = `
+    [[block]] struct Uniforms {
+      color : vec4<f32>;
+    };
+    [[binding(0), group(0)]] var<uniform> uniforms : Uniforms;
 
-    void main(){
-        fragColor = uniforms.color;
+    [[stage(fragment)]]
+    fn main() -> [[location(0)]] vec4<f32> {
+      return uniforms.color;
     }
 `;
 
-const context = canvas.getContext('gpupresent');
+const context = canvas.getContext('webgpu');
 
 const swapChainFormat = 'bgra8unorm';
 
@@ -64,13 +71,13 @@ const pipeline = device.createRenderPipeline({
     layout: pipelineLayout,
     vertex: {
         module: device.createShaderModule({
-            code: glslang.compileGLSL(vs, 'vertex')
+            code: vs
         }),
         entryPoint: 'main'
     },
     fragment: {
         module: device.createShaderModule({
-            code: glslang.compileGLSL(fs, 'fragment')
+            code: fs
         }),
         entryPoint: 'main',
         targets:[{
@@ -78,7 +85,7 @@ const pipeline = device.createRenderPipeline({
         }]
     },
     primitive:{
-    	topology: 'point-list'
+        topology: 'point-list'
     },
 });
 

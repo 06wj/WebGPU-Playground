@@ -5,38 +5,39 @@ const adapter = await navigator.gpu.requestAdapter();
 const device = await adapter.requestDevice();
 const glslang = await glslangModule();
 
-const vs = `#version 450
-    layout(location=0) in vec2 a_position;
-    layout(location=1) in vec3 a_color;
-    layout(location=2) in vec2 a_uv;
+const vs = `
+    struct VertexOutput {
+      [[builtin(position)]] position : vec4<f32>;
+      [[location(0)]] v_color : vec3<f32>;
+      [[location(1)]] v_uv : vec2<f32>;
+    };
 
-    layout(location=0) out vec3 v_color;
-    layout(location=1) out vec2 v_uv;
-
-    void main(){
-        gl_Position = vec4(a_position, 0, 1);
-        v_color = a_color;
-        v_uv = a_uv;
+    [[stage(vertex)]]
+    fn main([[location(0)]] a_position : vec2<f32>, 
+        [[location(1)]] a_color : vec3<f32>,
+        [[location(2)]] a_uv : vec2<f32>) -> VertexOutput {
+      var output : VertexOutput;
+      output.position = vec4<f32>(a_position, 0.0, 1.0);
+      output.v_color = a_color;
+      output.v_uv = a_uv;
+      return output;
     }
 `;
 
-const fs = `#version 450
-    precision highp float;
-    layout(set=0, binding=0) uniform sampler u_sampler;
-    layout(set=0, binding=1) uniform texture2D u_texture;
-    layout(location=0) in vec3 v_color;
-    layout(location=1) in vec2 v_uv;
+const fs = `
+    [[group(0), binding(0)]] var u_sampler: sampler;
+    [[group(0), binding(1)]] var u_texture: texture_2d<f32>;
 
-    layout(location=0) out vec4 fragColor;
-
-    void main(){
-        vec4 color = texture(sampler2D(u_texture, u_sampler), v_uv);
-        color.rgb *= v_color;
-        fragColor = color;
+    [[stage(fragment)]]
+    fn main([[location(0)]] v_color: vec3<f32>,
+        [[location(1)]] v_uv: vec2<f32>) -> [[location(0)]] vec4<f32> {
+      var fragColor = textureSample(u_texture, u_sampler, v_uv);
+      fragColor = fragColor * vec4<f32>(v_color, 1.0);
+      return fragColor;
     }
 `;
 
-const context = canvas.getContext('gpupresent');
+const context = canvas.getContext('webgpu');
 
 const swapChainFormat = 'bgra8unorm';
 
@@ -60,7 +61,7 @@ const verticesBuffer = device.createBuffer({
 new Float32Array(verticesBuffer.getMappedRange()).set(verticesData);
 verticesBuffer.unmap();
 
-const texture = await helpers.createTextureFromImage(device, './images/hilo.png', GPUTextureUsage.SAMPLED);
+const texture = await helpers.createTextureFromImage(device, './images/hilo.png', GPUTextureUsage.TEXTURE_BINDING);
 const sampler = device.createSampler({
     magFilter: 'linear',
     minFilter: 'linear',
@@ -95,7 +96,7 @@ const pipeline = device.createRenderPipeline({
     layout: pipelineLayout,
     vertex: {
         module: device.createShaderModule({
-            code: glslang.compileGLSL(vs, 'vertex')
+            code: vs
         }),
         entryPoint: 'main',
         buffers: [{
@@ -117,7 +118,7 @@ const pipeline = device.createRenderPipeline({
     },
     fragment: {
         module: device.createShaderModule({
-            code: glslang.compileGLSL(fs, 'fragment')
+            code: fs
         }),
         entryPoint: 'main',
         targets: [{

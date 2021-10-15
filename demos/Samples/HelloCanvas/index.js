@@ -5,7 +5,7 @@ const adapter = await navigator.gpu.requestAdapter();
 const device = await adapter.requestDevice();
 const glslang = await glslangModule();
 
-const context = canvas.getContext('gpupresent');
+const context = canvas.getContext('webgpu');
 
 const swapChainFormat = 'bgra8unorm';
 
