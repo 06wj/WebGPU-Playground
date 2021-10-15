@@ -9,6 +9,24 @@
     <div id='not-supported'>
         Your browser does not support WebGPU, please visit <a href='https://webgpu.io' target="_blank">webgpu.io</a> for more information.
     </div>
+    <script>
+        const tokens = {
+            github: 'AhQ7nP/q9OuTbrVuDFH0pWa6qaivxYWw+UWMSeeGlj/8Wb/kCQsfEaUU1xdaN49drsyOnE2UMNNLouJ4Jx9QuAcAAABheyJvcmlnaW4iOiJodHRwczovLzA2d2ouZ2l0aHViLmlvOjQ0MyIsImZlYXR1cmUiOiJXZWJHUFUiLCJleHBpcnkiOjE2NDMxNTUxOTksImlzU3ViZG9tYWluIjp0cnVlfQ==',
+            gitee: 'Aq/fwCgj9JDGt/975hFtW1p8a4ehUs2U6WltnVolgJqp8ACbqwOMUphbxPcmWyr0n2Qk+xH0FAjLg8JI6EBByw8AAABseyJvcmlnaW4iOiJodHRwczovL2Zvcmstb3Blbi1zb3VyY2UuZ2l0ZWUuaW86NDQzIiwiZmVhdHVyZSI6IldlYkdQVSIsImV4cGlyeSI6MTY0MzE1NTE5OSwiaXNTdWJkb21haW4iOnRydWV9',
+            local: 'At0+QaI2/dq08XBa3+0eU5DwnqLic4oQ66bgHsUT1di21epm4SR6G0kQQ5chhqBWozBzDDHbsLWE5uBTp2tyKQ4AAABJeyJvcmlnaW4iOiJodHRwOi8vbG9jYWxob3N0OjIzMzMiLCJmZWF0dXJlIjoiV2ViR1BVIiwiZXhwaXJ5IjoxNjQzMTU1MTk5fQ=='
+        };
+        const meta = document.createElement('meta');
+        meta.setAttribute('http-equiv', 'origin-trial');
+        let token = tokens.github;
+        if (location.href.indexOf('gitee') > -1) {
+            token = tokens.gitee;
+        } else if (location.href.indexOf('local') > -1) {
+            token = tokens.local;
+        }
+
+        meta.setAttribute('content', token);
+        document.head.appendChild(meta);
+    </script>
     <canvas id='canvas'></canvas>
     <script>
         window.showNotSupport = () => {
