@@ -3,7 +3,7 @@ canvas.width = canvas.height = 500;
 canvas.style = 'width:500px;height:500px';
 const adapter = await navigator.gpu.requestAdapter();
 const device = await adapter.requestDevice();
-const glslang = await glslangModule();
+
 
 const vs = `
     [[block]] struct Uniforms {

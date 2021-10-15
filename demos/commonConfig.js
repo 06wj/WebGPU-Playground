@@ -31,7 +31,6 @@ export const getConfig = async () => {
                 './libs/helpers.js',
                 './libs/hilo3d/Hilo3d.js',
                 './libs/gl-matrix/gl-matrix-min.js',
-                './libs/glslang/web-devel/glslang.js',
             ]
         }
     }

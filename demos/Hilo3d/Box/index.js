@@ -3,7 +3,7 @@ canvas.width = innerWidth;
 canvas.height = innerHeight;
 const adapter = await navigator.gpu.requestAdapter();
 const device = await adapter.requestDevice();
-const glslang = await glslangModule();
+
 
 const stage = new Hilo3d.Node();
 const camera = new Hilo3d.PerspectiveCamera({
