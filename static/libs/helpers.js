@@ -4,63 +4,104 @@
 
 const helpers = {};
 
-helpers.createTextureFromImage = async function createTextureFromImage(device, src, usage, needCors) {
-    const img = new Image();
-    if (needCors) {
-        img.crossOrigin = 'anonymous'
-    }
-    img.src = src;
-    await img.decode();
-
-    const imageCanvas = document.createElement('canvas');
-    imageCanvas.width = img.width;
-    imageCanvas.height = img.height;
-
-    const imageCanvasContext = imageCanvas.getContext('2d');
-    imageCanvasContext.translate(0, img.height);
-    imageCanvasContext.scale(1, -1);
-    imageCanvasContext.drawImage(img, 0, 0, img.width, img.height);
-    const imageData = imageCanvasContext.getImageData(0, 0, img.width, img.height);
-
-    let data = null;
-
-    const bytesPerRow = Math.ceil(img.width * 4 / 256) * 256;
-    if (bytesPerRow == img.width * 4) {
-        data = imageData.data;
-    } else {
-        data = new Uint8Array(bytesPerRow * img.height);
-        let imagePixelIndex = 0;
-        for (let y = 0; y < img.height; ++y) {
-            for (let x = 0; x < img.width; ++x) {
-                let i = x * 4 + y * bytesPerRow;
-                data[i] = imageData.data[imagePixelIndex];
-                data[i + 1] = imageData.data[imagePixelIndex + 1];
-                data[i + 2] = imageData.data[imagePixelIndex + 2];
-                data[i + 3] = imageData.data[imagePixelIndex + 3];
-                imagePixelIndex += 4;
-            }
+async function loadImages(srcList, needCors) {
+   const imageList = await Promise.all(srcList.map(async (src) => {
+        const img = new Image();
+        if (needCors) {
+            img.crossOrigin = 'anonymous'
         }
+        img.src = src;
+        await img.decode();
+        return img;
+    }));
+    return imageList;
+}
+
+function createImageData(imageList) {
+    const imageCount = imageList.length;
+    let width;
+    let height;
+    let bytesPerRow;
+
+    const imageDataList = imageList.map(img => {
+        imageWidth = img.width;
+        imageHeight = img.height;
+
+        const imageCanvas = document.createElement('canvas');
+        imageCanvas.width = imageWidth;
+        imageCanvas.height = imageHeight;
+
+        const imageCanvasContext = imageCanvas.getContext('2d');
+        imageCanvasContext.translate(0, imageHeight);
+        imageCanvasContext.scale(1, -1);
+        imageCanvasContext.drawImage(img, 0, 0, imageWidth, imageHeight);
+        const imageData = imageCanvasContext.getImageData(0, 0, imageWidth, imageHeight);
+
+        bytesPerRow = Math.ceil(imageWidth * 4 / 256) * 256;
+        if (bytesPerRow == imageWidth * 4) {
+            return imageData.data;
+        } else {
+            const data = new Uint8Array(bytesPerRow * imageHeight);
+            let imagePixelIndex = 0;
+            for (let y = 0; y < img.height; ++y) {
+                for (let x = 0; x < imageWidth; ++x) {
+                    let i = x * 4 + y * bytesPerRow;
+                    data[i] = imageData.data[imagePixelIndex];
+                    data[i + 1] = imageData.data[imagePixelIndex + 1];
+                    data[i + 2] = imageData.data[imagePixelIndex + 2];
+                    data[i + 3] = imageData.data[imagePixelIndex + 3];
+                    imagePixelIndex += 4;
+                }
+            }
+
+            return data;
+        }
+    });
+
+    return {
+        imageDataList,
+        imageCount,
+        imageWidth,
+        imageHeight,
+        bytesPerRow,
     }
+};
+
+helpers.createTextureFromImage = async function createTextureFromImage(device, src, usage, needCors) {
+    const srcList = Array.isArray(src)? src : [src];
+    const images = await loadImages(srcList, needCors);
+    const {
+        imageDataList,
+        imageCount,
+        imageWidth,
+        imageHeight,
+        bytesPerRow,
+    } = createImageData(images);
 
     const texture = device.createTexture({
         size: {
-            width: img.width,
-            height: img.height,
-            depth: 1,
+            width: imageWidth,
+            height: imageHeight,
+            depthOrArrayLayers: imageCount,
         },
+        dimension: '2d',
         format: "rgba8unorm",
         usage: GPUTextureUsage.COPY_DST | usage,
     });
 
-    device.queue.writeTexture({
-        texture
-    }, data, {
-        offset: 0,
-        bytesPerRow
-    }, {
-        width: img.width,
-        height: img.height,
-        depth: 1,
-    });
+    for(let i = 0;i < imageCount;i ++) {
+        device.queue.writeTexture({
+            texture,
+            origin:{
+                z: i,
+            }
+        }, imageDataList[i], {
+            bytesPerRow,
+        }, {
+            width: imageWidth,
+            height: imageHeight,
+            depth: 1,
+        });
+    }
     return texture;
 };

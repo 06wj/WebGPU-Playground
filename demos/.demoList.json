@@ -34,6 +34,9 @@
     }, {
         "label": "TransformTexturedQuad",
         "src": "TransformTexturedQuad"
+    }, {
+        "label": "CubeTexture",
+        "src": "CubeTexture"
     }]
 },{
     "group": "Hilo3d demo",
