@@ -6,7 +6,7 @@ const device = await adapter.requestDevice();
 
 
 const vs = `
-    [[block]] struct Uniforms {
+    struct Uniforms {
       modelMatrix : mat3x3<f32>;
     };
     [[binding(3), group(0)]] var<uniform> uniforms : Uniforms;

@@ -28,7 +28,7 @@ const fs = `
     [[group(0), binding(0)]] var u_sampler: sampler;
     [[group(0), binding(1)]] var u_texture: texture_cube<f32>;
 
-    [[block]] struct Uniforms {
+    struct Uniforms {
       time : f32;
     };
     [[group(0), binding(2)]] var<uniform> uniforms : Uniforms;
