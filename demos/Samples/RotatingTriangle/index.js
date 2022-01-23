@@ -113,7 +113,7 @@ const pipeline = device.createRenderPipeline({
 const modelMatrix = new Hilo3d.Matrix3();
 const modelMatrixData = new Float32Array(12);
 function getModelMatrix(){
-    modelMatrix.rotate(-30/180*Math.PI);
+    modelMatrix.rotate(-1/180*Math.PI); // every render pass, let all vertices rotate 1 deg clockwise
     const elements = modelMatrix.elements;
     modelMatrixData.set(elements);
     modelMatrixData.copyWithin(8, 6, 9);
