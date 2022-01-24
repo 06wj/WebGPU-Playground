@@ -37,6 +37,9 @@
     }, {
         "label": "CubeTexture",
         "src": "CubeTexture"
+    }, {
+        "label": "Web Worker",
+        "src": "WebWorker"
     }]
 },{
     "group": "Hilo3d demo",
