@@ -51,22 +51,22 @@ const colorBox1 = new Hilo3d.Mesh({
 stage.addChild(colorBox1);
 
 const vs = `
-    [[block]] struct Uniforms {
+    struct Uniforms {
       u_normalMatrix : mat3x3<f32>;
       u_modelViewProjectionMatrix : mat4x4<f32>;
       u_modelViewMatrix : mat4x4<f32>;
       diffuse: vec3<f32>;
     };
-    [[binding(0), group(0)]] var<uniform> uniforms : Uniforms;
+    @group(0) @binding(0) var<uniform> uniforms : Uniforms;
 
     struct VertexOutput {
-      [[builtin(position)]] position : vec4<f32>;
-      [[location(0)]] v_normal : vec3<f32>;
+      @builtin(position) position : vec4<f32>;
+      @location(0) v_normal : vec3<f32>;
     };
 
-    [[stage(vertex)]]
-    fn main([[location(0)]] a_position : vec3<f32>,
-        [[location(1)]] a_normal : vec3<f32>) -> VertexOutput {
+    @stage(vertex)
+    fn main(@location(0) a_position : vec3<f32>,
+        @location(1) a_normal : vec3<f32>) -> VertexOutput {
         var output : VertexOutput;
         var pos = vec4<f32>(a_position, 1.0);
         var normal = a_normal;
@@ -77,17 +77,17 @@ const vs = `
 `;
 
 const fs = `
-    [[block]] struct Uniforms {
+    struct Uniforms {
       u_normalMatrix : mat3x3<f32>;
       u_modelViewProjectionMatrix : mat4x4<f32>;
       u_modelViewMatrix : mat4x4<f32>;
       diffuse: vec3<f32>;
     };
-    [[binding(0), group(0)]] var<uniform> uniforms : Uniforms;
+    @group(0) @binding(0) var<uniform> uniforms : Uniforms;
 
 
-    [[stage(fragment)]]
-    fn main([[location(0)]] v_normal: vec3<f32>) -> [[location(0)]] vec4<f32> {
+    @stage(fragment)
+    fn main(@location(0) v_normal: vec3<f32>) -> @location(0) vec4<f32> {
         var light = max(dot(v_normal, vec3<f32>(0.0, 1.0, 1.0)), 0.0);
         var normal = normalize(v_normal);
         var diffuse = uniforms.diffuse;

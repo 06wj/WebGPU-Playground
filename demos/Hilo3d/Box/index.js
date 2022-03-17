@@ -30,18 +30,18 @@ stage.addChild(camera);
 stage.addChild(colorBox);
 
 const vs = `
-    [[block]] struct Uniforms {
+    struct Uniforms {
       u_modelViewProjectionMatrix : mat4x4<f32>;
     };
-    [[binding(0), group(0)]] var<uniform> uniforms : Uniforms;
+    @group(0) @binding(0) var<uniform> uniforms : Uniforms;
 
 
     struct VertexOutput {
-      [[builtin(position)]] position : vec4<f32>;
+      @builtin(position) position : vec4<f32>;
     };
 
-    [[stage(vertex)]]
-    fn main([[location(0)]] a_position : vec3<f32>) -> VertexOutput {
+    @stage(vertex)
+    fn main(@location(0) a_position : vec3<f32>) -> VertexOutput {
       var output : VertexOutput;
       output.position = uniforms.u_modelViewProjectionMatrix * vec4<f32>(a_position, 1.0);
       return output;
@@ -49,8 +49,8 @@ const vs = `
 `;
 
 const fs = `
-    [[stage(fragment)]]
-    fn main() -> [[location(0)]] vec4<f32> {
+    @stage(fragment)
+    fn main() -> @location(0) vec4<f32> {
       return vec4<f32>(0.3, 0.9, 0.6, 1.0);
     }
 `;

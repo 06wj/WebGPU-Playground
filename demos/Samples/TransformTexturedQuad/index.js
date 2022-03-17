@@ -6,20 +6,20 @@ const device = await adapter.requestDevice();
 
 
 const vs = `
-    [[block]] struct Uniforms {
+    struct Uniforms {
       modelMatrix : mat3x3<f32>;
     };
-    [[binding(3), group(0)]] var<uniform> uniforms : Uniforms;
+    @group(0) @binding(3) var<uniform> uniforms : Uniforms;
 
 
     struct VertexOutput {
-      [[builtin(position)]] position : vec4<f32>;
-      [[location(0)]] v_uv : vec2<f32>;
+      @builtin(position) position : vec4<f32>;
+      @location(0) v_uv : vec2<f32>;
     };
 
-    [[stage(vertex)]]
-    fn main([[location(0)]] a_position : vec2<f32>, 
-        [[location(1)]] a_uv : vec2<f32>) -> VertexOutput {
+    @stage(vertex)
+    fn main(@location(0) a_position : vec2<f32>, 
+        @location(1) a_uv : vec2<f32>) -> VertexOutput {
       var output : VertexOutput;
       var pos = uniforms.modelMatrix * vec3<f32>(a_position, 1.0);
       output.position = vec4<f32>(pos, 1.0);
@@ -29,12 +29,12 @@ const vs = `
 `;
 
 const fs = `
-    [[group(0), binding(0)]] var u_sampler: sampler;
-    [[group(0), binding(1)]] var u_texture0: texture_2d<f32>;
-    [[group(0), binding(2)]] var u_texture1: texture_2d<f32>;
+    @group(0) @binding(0) var u_sampler: sampler;
+    @group(0) @binding(1) var u_texture0: texture_2d<f32>;
+    @group(0) @binding(2) var u_texture1: texture_2d<f32>;
 
-    [[stage(fragment)]]
-    fn main([[location(0)]] v_uv: vec2<f32>) -> [[location(0)]] vec4<f32> {
+    @stage(fragment)
+    fn main(@location(0) v_uv: vec2<f32>) -> @location(0) vec4<f32> {
       var color0 = textureSample(u_texture0, u_sampler, v_uv);
       var color1 = textureSample(u_texture1, u_sampler, v_uv);
       var fragColor = color0 * color1;

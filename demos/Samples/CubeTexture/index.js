@@ -7,15 +7,15 @@ const device = await adapter.requestDevice();
 
 const vs = `
     struct VertexOutput {
-      [[builtin(position)]] position : vec4<f32>;
-      [[location(0)]] v_color : vec3<f32>;
-      [[location(1)]] v_uv : vec2<f32>;
+      @builtin(position) position : vec4<f32>;
+      @location(0) v_color : vec3<f32>;
+      @location(1) v_uv : vec2<f32>;
     };
 
-    [[stage(vertex)]]
-    fn main([[location(0)]] a_position : vec2<f32>, 
-        [[location(1)]] a_color : vec3<f32>,
-        [[location(2)]] a_uv : vec2<f32>) -> VertexOutput {
+    @stage(vertex)
+    fn main(@location(0) a_position : vec2<f32>, 
+        @location(1) a_color : vec3<f32>,
+        @location(2) a_uv : vec2<f32>) -> VertexOutput {
       var output : VertexOutput;
       output.position = vec4<f32>(a_position, 0.0, 1.0);
       output.v_color = a_color;
@@ -25,17 +25,17 @@ const vs = `
 `;
 
 const fs = `
-    [[group(0), binding(0)]] var u_sampler: sampler;
-    [[group(0), binding(1)]] var u_texture: texture_cube<f32>;
+    @group(0) @binding(0) var u_sampler: sampler;
+    @group(0) @binding(1) var u_texture: texture_cube<f32>;
 
-    [[block]] struct Uniforms {
+    struct Uniforms {
       time : f32;
     };
-    [[group(0), binding(2)]] var<uniform> uniforms : Uniforms;
+    @group(0) @binding(2) var<uniform> uniforms : Uniforms;
 
-    [[stage(fragment)]]
-    fn main([[location(0)]] v_color: vec3<f32>,
-        [[location(1)]] v_uv: vec2<f32>) -> [[location(0)]] vec4<f32> {
+    @stage(fragment)
+    fn main(@location(0) v_color: vec3<f32>,
+        @location(1) v_uv: vec2<f32>) -> @location(0) vec4<f32> {
       var pos = vec3<f32>(v_uv.x - 0.5, 0.5 - v_uv.y, 0.5);
       pos = normalize(pos);
 

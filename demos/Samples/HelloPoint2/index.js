@@ -7,10 +7,10 @@ const device = await adapter.requestDevice();
 
 const vs = `
     struct VertexOutput {
-        [[builtin(position)]] position : vec4<f32>;
+        @builtin(position) position : vec4<f32>;
     };
 
-    [[stage(vertex)]]
+    @stage(vertex)
     fn main() ->  VertexOutput {
         var output : VertexOutput;
         output.position = vec4<f32>(-0.5, 0.5, 0.0, 1.0);
@@ -19,13 +19,13 @@ const vs = `
 `;
 
 const fs = `
-    [[block]] struct Uniforms {
+    struct Uniforms {
       color : vec4<f32>;
     };
-    [[binding(0), group(0)]] var<uniform> uniforms : Uniforms;
+    @group(0) @binding(0) var<uniform> uniforms : Uniforms;
 
-    [[stage(fragment)]]
-    fn main() -> [[location(0)]] vec4<f32> {
+    @stage(fragment)
+    fn main() -> @location(0) vec4<f32> {
       return uniforms.color;
     }
 `;
