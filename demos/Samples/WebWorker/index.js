@@ -88,12 +88,14 @@ async function main(canvas) {
         const renderPassDescriptor = {
             colorAttachments: [{
                 view: textureView,
-                loadValue: {
+                loadOp: 'clear',
+                storeOp: 'store',
+                clearValue:{
                     r: 0,
                     g: 0,
                     b: 0,
-                    a: 1
-                },
+                    a: 1,
+                }
             }],
         };    
 
@@ -101,7 +103,7 @@ async function main(canvas) {
         passEncoder.setPipeline(pipeline);
         passEncoder.setVertexBuffer(0, verticesBuffer);
         passEncoder.draw(3, 1, 0, 0);
-        passEncoder.endPass();
+        passEncoder.end();
 
         device.queue.submit([commandEncoder.finish()]);
     }

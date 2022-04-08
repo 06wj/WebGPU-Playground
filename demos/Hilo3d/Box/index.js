@@ -143,12 +143,14 @@ const pipeline = device.createRenderPipeline({
 const renderPassDescriptor = {
     colorAttachments: [{
         view: null,
-        loadValue: {
+        loadOp: 'clear',
+        storeOp: 'store',
+        clearValue: {
             r: 0,
             g: 0,
             b: 0,
-            a: 1
-        },
+            a: 1,
+        }
     }],
 };  
 
@@ -169,7 +171,7 @@ function render() {
     passEncoder.setIndexBuffer(indicesBuffer, 'uint16');
     passEncoder.setVertexBuffer(0, verticesBuffer);
     passEncoder.drawIndexed(boxGeometry.indices.count, 1, 0, 0, 0);
-    passEncoder.endPass();
+    passEncoder.end();
 
     device.queue.submit([commandEncoder.finish()]);
 }

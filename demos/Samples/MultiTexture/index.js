@@ -138,12 +138,14 @@ const pipeline = device.createRenderPipeline({
 const renderPassDescriptor = {
     colorAttachments: [{
         view: null,
-        loadValue: {
+        loadOp: 'clear',
+        storeOp: 'store',
+        clearValue: {
             r: 0,
             g: 0,
             b: 0,
-            a: 1
-        },
+            a: 1,
+        }
     }],
 };    
 
@@ -156,7 +158,7 @@ function render() {
     passEncoder.setBindGroup(0, uniformBindGroup);
     passEncoder.setVertexBuffer(0, verticesBuffer);
     passEncoder.draw(4, 1, 0, 0);
-    passEncoder.endPass();
+    passEncoder.end();
 
     device.queue.submit([commandEncoder.finish()]);
 }

@@ -207,12 +207,14 @@ const pipeline = device.createRenderPipeline({
 const renderPassDescriptor = {
     colorAttachments: [{
         view: null,
-        loadValue: {
-            r: .9,
-            g: .6,
-            b: .3,
-            a: 1
-        },
+        loadOp: 'clear',
+        storeOp: 'store',
+        clearValue: {
+            r: 0,
+            g: 0,
+            b: 0,
+            a: 1,
+        }
     }],
 };  
 
@@ -267,7 +269,7 @@ function render(dt) {
         uniformOffset += alignedUniformSize;
     }));
 
-    passEncoder.endPass();
+    passEncoder.end();
     device.queue.submit([commandEncoder.finish()]);
 }
 

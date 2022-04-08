@@ -21,7 +21,9 @@ function render() {
     const renderPassDescriptor = {
         colorAttachments: [{
             view: textureView,
-            loadValue: {
+            loadOp:'clear',
+            storeOp: 'store',
+            clearValue: {
                 r: Math.random(),
                 g: Math.random(),
                 b: Math.random(),
@@ -31,7 +33,7 @@ function render() {
     };
 
     const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-    passEncoder.endPass();
+    passEncoder.end();
 
     device.queue.submit([commandEncoder.finish()]);
 }

@@ -107,12 +107,14 @@ function render() {
     const renderPassDescriptor = {
         colorAttachments: [{
             view: textureView,
-            loadValue: {
+            loadOp: 'clear',
+            storeOp: 'store',
+            clearValue: {
                 r: 0,
                 g: 0,
                 b: 0,
-                a: 1
-            },
+                a: 1,
+            }
         }],
     };
 
@@ -120,7 +122,7 @@ function render() {
     passEncoder.setPipeline(pipeline);
     passEncoder.setBindGroup(0, uniformBindGroup);
     passEncoder.draw(1, 1, 0, 0);
-    passEncoder.endPass();
+    passEncoder.end();
 
     device.queue.submit([commandEncoder.finish()]);
 }
