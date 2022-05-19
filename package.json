@@ -6,6 +6,8 @@
     "demo:dev": "demosify --serve",
     "demo:prod": "demosify --prod",
     "dev": "npm run demo:dev",
+    "start": "npm run demo:dev",
+    "build": "npm run demo:prod",
     "pub": "npm run demo:prod"
   },
   "repository": {

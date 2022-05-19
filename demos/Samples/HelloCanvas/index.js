@@ -7,11 +7,12 @@ const device = await adapter.requestDevice();
 
 const context = canvas.getContext('webgpu');
 
-const swapChainFormat = 'bgra8unorm';
+const swapChainFormat = context.getPreferredFormat(adapter);
 
 const swapChain = context.configure({
     device,
     format: swapChainFormat,
+    compositingAlphaMode: "opaque",
 });
 
 function render() {

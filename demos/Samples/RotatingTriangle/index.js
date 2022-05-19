@@ -32,11 +32,12 @@ const fs = `
 
 const context = canvas.getContext('webgpu');
 
-const swapChainFormat = 'bgra8unorm';
+const swapChainFormat = context.getPreferredFormat(adapter);
 
 const swapChain = context.configure({
     device,
     format: swapChainFormat,
+    compositingAlphaMode: "opaque",
 });
 
 const uniformBufferSize = 4 * 12;

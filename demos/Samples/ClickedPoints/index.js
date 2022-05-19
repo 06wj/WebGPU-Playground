@@ -27,11 +27,12 @@ const fs = `
 
 const context = canvas.getContext('webgpu');
 
-const swapChainFormat = 'bgra8unorm';
+const swapChainFormat = context.getPreferredFormat(adapter);
 
 const swapChain = context.configure({
     device,
     format: swapChainFormat,
+    compositingAlphaMode: "opaque",
 });
 
 const pointsArray = [0, 0, 0.5, 0.5];
