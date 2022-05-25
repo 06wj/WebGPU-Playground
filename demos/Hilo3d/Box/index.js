@@ -31,13 +31,13 @@ stage.addChild(colorBox);
 
 const vs = `
     struct Uniforms {
-      u_modelViewProjectionMatrix : mat4x4<f32>;
+      u_modelViewProjectionMatrix : mat4x4<f32>
     };
     @group(0) @binding(0) var<uniform> uniforms : Uniforms;
 
 
     struct VertexOutput {
-      @builtin(position) position : vec4<f32>;
+      @builtin(position) position : vec4<f32>
     };
 
     @stage(vertex)

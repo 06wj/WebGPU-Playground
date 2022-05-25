@@ -12,7 +12,7 @@ async function main(canvas) {
 
     const vs = \`
         struct VertexOutput {
-          @builtin(position) position : vec4<f32>;
+          @builtin(position) position : vec4<f32>
         };
 
         @stage(vertex)

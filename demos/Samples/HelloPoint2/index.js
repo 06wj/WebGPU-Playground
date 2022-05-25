@@ -7,7 +7,7 @@ const device = await adapter.requestDevice();
 
 const vs = `
     struct VertexOutput {
-        @builtin(position) position : vec4<f32>;
+        @builtin(position) position : vec4<f32>
     };
 
     @stage(vertex)
@@ -20,7 +20,7 @@ const vs = `
 
 const fs = `
     struct Uniforms {
-      color : vec4<f32>;
+      color : vec4<f32>
     };
     @group(0) @binding(0) var<uniform> uniforms : Uniforms;
 

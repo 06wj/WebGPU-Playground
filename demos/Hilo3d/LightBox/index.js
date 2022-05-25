@@ -52,16 +52,16 @@ stage.addChild(colorBox1);
 
 const vs = `
     struct Uniforms {
-      u_normalMatrix : mat3x3<f32>;
-      u_modelViewProjectionMatrix : mat4x4<f32>;
-      u_modelViewMatrix : mat4x4<f32>;
-      diffuse: vec3<f32>;
+      u_normalMatrix : mat3x3<f32>,
+      u_modelViewProjectionMatrix : mat4x4<f32>,
+      u_modelViewMatrix : mat4x4<f32>,
+      diffuse: vec3<f32>
     };
     @group(0) @binding(0) var<uniform> uniforms : Uniforms;
 
     struct VertexOutput {
-      @builtin(position) position : vec4<f32>;
-      @location(0) v_normal : vec3<f32>;
+      @builtin(position) position : vec4<f32>,
+      @location(0) v_normal : vec3<f32>
     };
 
     @stage(vertex)
@@ -78,10 +78,10 @@ const vs = `
 
 const fs = `
     struct Uniforms {
-      u_normalMatrix : mat3x3<f32>;
-      u_modelViewProjectionMatrix : mat4x4<f32>;
-      u_modelViewMatrix : mat4x4<f32>;
-      diffuse: vec3<f32>;
+      u_normalMatrix : mat3x3<f32>,
+      u_modelViewProjectionMatrix : mat4x4<f32>,
+      u_modelViewMatrix : mat4x4<f32>,
+      diffuse: vec3<f32>
     };
     @group(0) @binding(0) var<uniform> uniforms : Uniforms;
 
