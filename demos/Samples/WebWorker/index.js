@@ -53,6 +53,7 @@ async function main(canvas) {
     verticesBuffer.unmap();
 
     const pipeline = device.createRenderPipeline({
+        layout: 'auto',
         vertex: {
             module: device.createShaderModule({
                 code: vs
@@ -77,8 +78,8 @@ async function main(canvas) {
             }],
         },
         primitive:{
-        topology: 'triangle-list'
-    },
+            topology: 'triangle-list'
+        },
     });
 
     function render() {

@@ -107,8 +107,8 @@ const pipeline = device.createRenderPipeline({
         }]
     },
     primitive:{
-	topology: 'triangle-list'
-},
+        topology: 'triangle-list'
+    },
 });
 
 const modelMatrix = new Hilo3d.Matrix3();

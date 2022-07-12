@@ -49,6 +49,7 @@ new Float32Array(verticesBuffer.getMappedRange()).set(verticesData);
 verticesBuffer.unmap();
 
 const pipeline = device.createRenderPipeline({
+    layout: 'auto',
     vertex: {
         module: device.createShaderModule({
             code: vs
@@ -73,8 +74,8 @@ const pipeline = device.createRenderPipeline({
         }],
     },
     primitive:{
-	topology: 'triangle-list'
-},
+        topology: 'triangle-list'
+    },
 });
 
 function render() {

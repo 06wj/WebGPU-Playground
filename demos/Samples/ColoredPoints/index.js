@@ -68,6 +68,7 @@ function render() {
     verticesBuffer.unmap();
 
     const pipeline = device.createRenderPipeline({
+        layout: 'auto',
         vertex: {
             module: device.createShaderModule({
                 code: vs
