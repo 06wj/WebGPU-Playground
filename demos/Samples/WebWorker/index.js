@@ -15,7 +15,7 @@ async function main(canvas) {
           @builtin(position) position : vec4<f32>
         };
 
-        @stage(vertex)
+        @vertex
         fn main(@location(0) a_position : vec2<f32>) -> VertexOutput {
           var output : VertexOutput;
           output.position = vec4<f32>(a_position, 0.0, 1.0);
@@ -24,7 +24,7 @@ async function main(canvas) {
     \`;
 
     const fs = \`
-        @stage(fragment)
+        @fragment
         fn main() -> @location(0) vec4<f32> {
           return vec4<f32>(1.0, 0.0, 0.0, 1.0);
         }
@@ -32,11 +32,11 @@ async function main(canvas) {
 
     const context = canvas.getContext('webgpu');
 
-    const swapChainFormat = context.getPreferredFormat(adapter);
+    const swapChainFormat = navigator.gpu.getPreferredCanvasFormat();
     const swapChain = context.configure({
         device,
         format: swapChainFormat,
-        compositingAlphaMode: "opaque",
+        alphaMode: "opaque",
     });
 
     const verticesData = new Float32Array([

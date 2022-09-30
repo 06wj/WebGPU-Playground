@@ -40,7 +40,7 @@ const vs = `
       @builtin(position) position : vec4<f32>
     };
 
-    @stage(vertex)
+    @vertex
     fn main(@location(0) a_position : vec3<f32>) -> VertexOutput {
       var output : VertexOutput;
       output.position = uniforms.u_modelViewProjectionMatrix * vec4<f32>(a_position, 1.0);
@@ -49,7 +49,7 @@ const vs = `
 `;
 
 const fs = `
-    @stage(fragment)
+    @fragment
     fn main() -> @location(0) vec4<f32> {
       return vec4<f32>(0.3, 0.9, 0.6, 1.0);
     }
@@ -57,12 +57,12 @@ const fs = `
 
 const context = canvas.getContext('webgpu');
 
-const swapChainFormat = context.getPreferredFormat(adapter);
+const swapChainFormat = navigator.gpu.getPreferredCanvasFormat();
 
 const swapChain = context.configure({
     device,
     format: swapChainFormat,
-    compositingAlphaMode: "opaque",
+    alphaMode: "opaque",
 });
 
 const verticesData = boxGeometry.vertices.data;

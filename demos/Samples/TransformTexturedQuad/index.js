@@ -17,7 +17,7 @@ const vs = `
       @location(0) v_uv : vec2<f32>
     };
 
-    @stage(vertex)
+    @vertex
     fn main(@location(0) a_position : vec2<f32>, 
         @location(1) a_uv : vec2<f32>) -> VertexOutput {
       var output : VertexOutput;
@@ -33,7 +33,7 @@ const fs = `
     @group(0) @binding(1) var u_texture0: texture_2d<f32>;
     @group(0) @binding(2) var u_texture1: texture_2d<f32>;
 
-    @stage(fragment)
+    @fragment
     fn main(@location(0) v_uv: vec2<f32>) -> @location(0) vec4<f32> {
       var color0 = textureSample(u_texture0, u_sampler, v_uv);
       var color1 = textureSample(u_texture1, u_sampler, v_uv);
@@ -44,12 +44,12 @@ const fs = `
 
 const context = canvas.getContext('webgpu');
 
-const swapChainFormat = context.getPreferredFormat(adapter);
+const swapChainFormat = navigator.gpu.getPreferredCanvasFormat();
 
 const swapChain = context.configure({
     device,
     format: swapChainFormat,
-    compositingAlphaMode: "opaque",
+    alphaMode: "opaque",
 });
 
 const verticesData = new Float32Array([

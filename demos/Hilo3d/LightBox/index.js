@@ -64,7 +64,7 @@ const vs = `
       @location(0) v_normal : vec3<f32>
     };
 
-    @stage(vertex)
+    @vertex
     fn main(@location(0) a_position : vec3<f32>,
         @location(1) a_normal : vec3<f32>) -> VertexOutput {
         var output : VertexOutput;
@@ -86,7 +86,7 @@ const fs = `
     @group(0) @binding(0) var<uniform> uniforms : Uniforms;
 
 
-    @stage(fragment)
+    @fragment
     fn main(@location(0) v_normal: vec3<f32>) -> @location(0) vec4<f32> {
         var light = max(dot(v_normal, vec3<f32>(0.0, 1.0, 1.0)), 0.0);
         var normal = normalize(v_normal);
@@ -99,12 +99,12 @@ const fs = `
 
 const context = canvas.getContext('webgpu');
 
-const swapChainFormat = context.getPreferredFormat(adapter);
+const swapChainFormat = navigator.gpu.getPreferredCanvasFormat();
 
 const swapChain = context.configure({
     device,
     format: swapChainFormat,
-    compositingAlphaMode: "opaque",
+    alphaMode: "opaque",
 });
 
 const verticesData = boxGeometry.vertices.data;
