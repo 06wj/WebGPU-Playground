@@ -31,5 +31,8 @@
     "@babel/standalone": "^7.9.6",
     "@webgpu/glslang": "^0.0.15",
     "hilo3d": "^1.13.47"
+  },
+  "engines": {
+    "node": ">=0.10.3 <15"
   }
 }
