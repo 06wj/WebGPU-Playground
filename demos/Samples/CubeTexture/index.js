@@ -43,12 +43,12 @@ const fs = `
       var c = cos(uniforms.time);
       var s = sin(uniforms.time);
 
-      var final = vec3<f32>(pos.x, pos.y, pos.z);
-      final.x = pos.x * c - pos.z * s;
-      final.z = pos.x * s + pos.z * c;
-      final = normalize(final);
+      var dir = vec3<f32>(pos.x, pos.y, pos.z);
+      dir.x = pos.x * c - pos.z * s;
+      dir.z = pos.x * s + pos.z * c;
+      dir = normalize(dir);
 
-      var fragColor = textureSample(u_texture, u_sampler, final);
+      var fragColor = textureSample(u_texture, u_sampler, dir);
       return fragColor;
     }
 `;
